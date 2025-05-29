@@ -22,7 +22,7 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          echo "matrix={\"account_id\":[\"${INT_ACCOUNT_ID}\",\"${INT_NON_PROD_ACCOUNT_ID}\",\"${INT_PROD_ACCOUNT_ID}\"]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"account_id\":[\"${env.INT_ACCOUNT_ID}\",\"${env.INT_NON_PROD_ACCOUNT_ID}\",\"${env.INT_PROD_ACCOUNT_ID}\"]}" >> "$GITHUB_OUTPUT"
 
   use-matrix:
     needs: generate-matrix
@@ -31,4 +31,4 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
       - name: Print account ID
-        run: echo "Running for account ID: ${{ matrix.account_id }}"
+        run: echo "${{ matrix.account_id }}"
