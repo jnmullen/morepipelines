@@ -40,16 +40,13 @@ jobs:
           echo "exit_code=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      - name: Handle Terraform Result
+      - name: Check Plan Result
         run: |
-          code="${{ steps.tf_plan.outputs.exit_code }}"
-          echo "Captured exit code: $code"
-
-          if [ "$code" == "2" ]; then
-            echo "✅ Changes detected"
-          elif [ "$code" == "0" ]; then
-            echo "🟢 No changes"
+          if [ "${{ steps.plan.outputs.exit_code }}" -eq 2 ]; then
+            echo "Changes detected."
+          elif [ "${{ steps.plan.outputs.exit_code }}" -eq 0 ]; then
+            echo "No changes."
           else
-            echo "❌ Terraform error"
+            echo "Error during plan."
             exit 1
           fi
