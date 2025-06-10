@@ -31,12 +31,32 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform Plan (with direct exit code)
-        id: terraform-plan
-        run: terraform plan -detailed-exitcode -out=tfplan.out
+      - name: Terraform Plan (all-in-one step)
+        id: tf_plan
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -out=tfplan.out
+          code=$?
+          echo "Terraform exit code: $code"
+          echo "exit_code=$code" >> $GITHUB_OUTPUT
+
+          if [ "$code" -eq 1 ]; then
+            echo "Terraform failed"
+            exit 1
+          fi
+        shell: bash
         continue-on-error: true
 
-      - name: Set exit code output
-        id: set-exit-code
+      - name: Handle Terraform Result
         run: |
-          echo "exit_code=${{ steps.terraform-plan.outcome == 'failure' && '2' || '0' }}" >> $GITHUB_OUTPUT
+          code="${{ steps.tf_plan.outputs.exit_code }}"
+          echo "Captured exit code: $code"
+
+          if [ "$code" == "2" ]; then
+            echo "✅ Changes detected"
+          elif [ "$code" == "0" ]; then
+            echo "🟢 No changes"
+          else
+            echo "❌ Terraform error"
+            exit 1
+          fi
