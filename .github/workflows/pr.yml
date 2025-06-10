@@ -36,7 +36,8 @@ jobs:
         id: plan
         run: |
           set +e
-          terraform plan -detailed-exitcode -out=tfplan.out
+          # terraform plan -detailed-exitcode -out=tfplan.out
+          terraform plan -out=tfplan.out
         continue-on-error: true
 
       - name: Check Plan Result
