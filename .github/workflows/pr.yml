@@ -31,29 +31,12 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform Plan (capture exit code)
-        run: |
-          terraform plan -detailed-exitcode -out=tfplan.out || echo $? > tf_exit_code.txt
-          if [ ! -f tf_exit_code.txt ]; then echo 0 > tf_exit_code.txt; fi
-          cat tf_exit_code.txt
+      - name: Terraform Plan (with direct exit code)
+        id: terraform-plan
+        run: terraform plan -detailed-exitcode -out=tfplan.out
         continue-on-error: true
 
-      - name: Read exit code as output
-        id: plan_code
+      - name: Set exit code output
+        id: set-exit-code
         run: |
-          code=$(cat tf_exit_code.txt)
-          echo "Terraform exit code: $code"
-          echo "exit_code=$code" >> $GITHUB_OUTPUT
-
-      - name: Act on Plan Result
-        run: |
-          code=${{ steps.plan_code.outputs.exit_code }}
-          echo "Terraform returned: $code"
-          if [[ "$code" == "2" ]]; then
-            echo "✅ Terraform detected changes"
-          elif [[ "$code" == "0" ]]; then
-            echo "🟢 No changes"
-          else
-            echo "❌ Error running terraform plan"
-            exit 1
-          fi
+          echo "exit_code=${{ steps.terraform-plan.outcome == 'failure' && '2' || '0' }}" >> $GITHUB_OUTPUT
