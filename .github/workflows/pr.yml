@@ -31,11 +31,12 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform plan
-        id: plan
+      - name: Terraform Plan with trap
         run: |
-              trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-              terraform plan -detailed-exitcode
+          set -e
+          trap 'echo "exit_code=$?" >> $GITHUB_OUTPUT' EXIT
+          terraform plan -detailed-exitcode
+        continue-on-error: true
               
       - name: Act on Terraform Exit Code
         run: |
