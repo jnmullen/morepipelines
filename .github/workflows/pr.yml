@@ -31,9 +31,11 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform Plan
+      - name: Terraform plan
         id: plan
         run: |
-            ls
-            terraform plan -detailed-exitcode
-            echo "exit_code=$?"
+              terraform plan -detailed-exitcode
+              code=$?
+              echo "Terraform exited with $code"
+              echo "exit_code=$code" >> $GITHUB_OUTPUT
+        continue-on-error: true
