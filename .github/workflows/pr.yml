@@ -34,12 +34,9 @@ jobs:
       - name: Terraform plan
         id: plan
         run: |
+              trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
               terraform plan -detailed-exitcode
-              code=$?
-              echo "Terraform exited with $code"
-              echo "exit_code=$code" >> $GITHUB_OUTPUT
-        continue-on-error: true
-
+              
       - name: Act on Terraform Exit Code
         run: |
           echo "Exit code was ${{ steps.plan.outputs.exit_code }}"
