@@ -31,21 +31,42 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform Plan with trap
+      - name: Terraform Plan with Trap
+        id: tfplan
+        shell: bash
         run: |
-          set -e
-          trap 'echo "exit_code=$?" >> $GITHUB_OUTPUT' EXIT
+          set -euo pipefail
+
+          handle_exit() {
+            local code=$?
+            echo "Terraform exited with code: $code"
+
+            # Save exit code to GitHub Actions output
+            echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+
+            # Optional: fail if terraform errored (exit code 1)
+            if [ "$code" -eq 1 ]; then
+              echo "Terraform plan failed due to an error"
+              exit 1
+            fi
+          }
+
+          # Trap EXIT to always run handle_exit
+          trap handle_exit EXIT
+
+          # Run Terraform plan
           terraform plan -detailed-exitcode
+
         continue-on-error: true
-              
-      - name: Act on Terraform Exit Code
+
+      - name: Act on Plan Results
         run: |
-          echo "Exit code was ${{ steps.plan.outputs.exit_code }}"
-          if [[ "${{ steps.plan.outputs.exit_code }}" == "2" ]]; then
-            echo "Terraform detected changes!"
-          elif [[ "${{ steps.plan.outputs.exit_code }}" == "0" ]]; then
-            echo "No changes."
+          echo "Captured Terraform exit code: ${{ steps.tfplan.outputs.exit_code }}"
+          if [ "${{ steps.tfplan.outputs.exit_code }}" == "2" ]; then
+            echo "✅ Terraform detected infrastructure changes."
+          elif [ "${{ steps.tfplan.outputs.exit_code }}" == "0" ]; then
+            echo "🟢 No changes detected."
           else
-            echo "Terraform plan failed!"
+            echo "❌ An unexpected error occurred."
             exit 1
           fi
