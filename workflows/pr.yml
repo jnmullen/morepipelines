@@ -53,7 +53,7 @@ run-tf-plan:
       id: init
       run: terraform init
 
-  - name: Terraform Plan
+    - name: Terraform Plan
       id: plan
       script: |
           terraform plan \
