@@ -38,6 +38,8 @@ generate-matrix:
   run-tf-plan:
     name: "Run TF Plan"
     runs-on: ubuntu-latest
+    needs:
+      - generate-matrix
     steps:
      - name: Checkout the repository to the runner
        uses: actions/checkout@v2
