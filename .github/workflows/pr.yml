@@ -36,4 +36,4 @@ jobs:
         run: |
             ls
             terraform plan -detailed-exitcode
-            echo $?
+            echo "exit_code=$?"
