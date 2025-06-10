@@ -39,3 +39,15 @@ jobs:
               echo "Terraform exited with $code"
               echo "exit_code=$code" >> $GITHUB_OUTPUT
         continue-on-error: true
+
+      - name: Act on Terraform Exit Code
+        run: |
+          echo "Exit code was ${{ steps.plan.outputs.exit_code }}"
+          if [[ "${{ steps.plan.outputs.exit_code }}" == "2" ]]; then
+            echo "Terraform detected changes!"
+          elif [[ "${{ steps.plan.outputs.exit_code }}" == "0" ]]; then
+            echo "No changes."
+          else
+            echo "Terraform plan failed!"
+            exit 1
+          fi
