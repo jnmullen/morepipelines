@@ -35,5 +35,5 @@ jobs:
         id: plan
         run: |
             ls
-            terraform plan
+            terraform plan -detailed-exitcode
             echo $?
